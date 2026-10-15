@@ -1,0 +1,17 @@
+/** @format */
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Mono:wght@100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+@import "tailwindcss";
+@import "./font.css"; /* Fonts */
+@import "./color.css"; /* Colors */
+
+@layer components {
+  .cardContainer {
+    @apply p-5.5;
+  }
+}
+
+@layer components {
+  .navbar {
+    @apply w-screen py-2.5 fixed left-0 mt-10 border-b bg-white border-border;
+  }
+}
