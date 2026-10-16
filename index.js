@@ -125,7 +125,6 @@ const renderModal = () => {
 // const skeletonCard = `<div class="cardContainer animate-pulse">
 
 const showLoading = () => {
-  isLoading = true;
   content.classList.remove("grid");
   content.innerHTML = ` <div id="loading" class="grid grid-cols-2 gap-3">
    <div class="h-80 w-full bg-slate-50 rounded-lg"></div>
