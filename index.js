@@ -5,37 +5,6 @@ const modal = document.querySelector("#modal");
 const content = document.querySelector("#content");
 const modalContent = document.querySelector("#modalContent");
 
-const products = [
-  {
-    id: "jacket",
-    name: "'BUILDER' JACKET",
-    price: 200000,
-    currency: "MMK",
-    image: "./images/JACKET.png",
-  },
-  {
-    id: "airpods",
-    name: "'DND, I'M BUILDING' AIRPODS",
-    price: 500000,
-    currency: "MMK",
-    image: "./images/AIRPODS.png",
-  },
-  {
-    id: "mug",
-    name: "'CAFFEINATED TO BUILD' MUG",
-    price: 20000,
-    currency: "MMK",
-    image: "./images/MUG.png",
-  },
-  {
-    id: "bottle",
-    name: "'HYDRATED TO BUILD' BOTTLE",
-    price: 15000,
-    currency: "MMK",
-    image: "./images/BOTTLE.png",
-  },
-];
-
 // Stores cart state items as: { id, name, price, currency, image, quantity }
 let addToCarts = [];
 
@@ -46,16 +15,16 @@ const createCard = (product) => {
 
   const productName = document.createElement("p");
   productName.classList.add("text-xs");
-  productName.textContent = product.name;
+  productName.textContent = product.title;
 
   const productImageContainer = document.createElement("div");
   productImageContainer.classList.add("flex", "justify-center");
-  productImageContainer.innerHTML = `<img src="${product.image}" class="w-52" />`;
+  productImageContainer.innerHTML = `<img src="${product.thumbnail}" class="w-52 h-60" />`;
 
   const cardFooter = document.createElement("div");
   cardFooter.classList.add("flex", "justify-between", "items-center");
   cardFooter.innerHTML = `
-    <p class="text-xs">${product.price.toLocaleString()} ${product.currency}</p>
+    <p class="text-xs">$${product.price.toLocaleString()} </p>
     <div class="flex items-center gap-3">
       <button class="btn-minus size-8 border rounded-sm border-[#E5E7EB]">-</button>
       <p class="text-sm font-medium" id="price-${product.id}">0</p>
@@ -129,14 +98,14 @@ const renderModal = () => {
       <div>
         <p class="text-sm font-medium">${item.name}</p>
         <div class="flex items-center gap-2 mt-1">
-          <img src="${item.image}" class="w-10" />
+          <img src="${item.thumbnail}" class="w-10" />
           <span class="text-xs text-gray-500">Qty: ${item.quantity}</span>
         </div>
       </div>
       <div class="flex justify-between gap-3 items-center">
-        <p class="text-sm font-semibold">${(
+        <p class="text-sm font-semibold">$${(
           item.price * item.quantity
-        ).toLocaleString()} ${item.currency}</p>
+        ).toLocaleString()}</p>
         <div class="flex items-center gap-3">
           <button class="btn-modal-minus size-8 border rounded-sm border-border flex items-center justify-center font-bold">
             -
@@ -153,7 +122,86 @@ const renderModal = () => {
   });
 };
 
-window.onload = () => {
+// const skeletonCard = `<div class="cardContainer animate-pulse">
+
+const showLoading = () => {
+  isLoading = true;
+  content.classList.remove("grid");
+  content.innerHTML = ` <div id="loading" class="grid grid-cols-2 gap-3">
+   <div class="h-80 w-full bg-slate-50 rounded-lg"></div>
+    <div class="h-80 w-full bg-slate-50 rounded-lg"></div>
+      <div class="h-80 w-full bg-slate-50 rounded-lg"></div>
+        <div class="h-80 w-full bg-slate-50 rounded-lg"></div>
+          <div class="h-80 w-full bg-slate-50 rounded-lg"></div>
+            <div class="h-80 w-full bg-slate-50 rounded-lg"></div>
+  </div>`;
+};
+
+const hideLoading = () => {
+  document.querySelector("#loading").remove();
+  content.classList.add("grid");
+};
+
+const showError = () => {
+  content.innerHTML = `<p class="text-sm text-gray-500 py-4 text-center">Failed to load products. Please try again later.</p>`;
+  content.classList.remove("grid");
+  throw new Error("Network response was not ok");
+};
+
+const showEmpty = () => {
+  content.innerHTML = `<p class="text-sm text-gray-500 py-4 text-center">No products available at the moment.</p>`;
+  content.classList.remove("grid");
+};
+
+const getProducts = async () => {
+  showLoading();
+  const response = await fetch("https://dummyjson.com/products");
+  if (!response.ok) {
+    showError();
+  }
+
+  hideLoading();
+
+  const data = await response.json();
+  if (data.products.length === 0) {
+    showEmpty();
+  }
+  return data;
+};
+
+// const data = fetch(url);
+// data
+//   .then((response) => {
+//     if (!response.ok) {
+//       throw new Error("Network response was not ok");
+//     }
+//     return response.json();
+//   })
+//   .then((data) => {
+//     console.log(data);
+//   });
+
+window.onload = async () => {
+  // Promise
+  // const promise1 = new Promise((resolve, reject) => {
+  //   let success = true; // Simulating an operation status
+  //   setTimeout(() => {
+  //     if (success) {
+  //       resolve("The operation was successful!"); // Transitions to fulfilled
+  //     } else {
+  //       reject("Something went wrong."); // Transitions to rejected
+  //     }
+  //   }, 4000);
+  // });
+  // promise1.catch((error) => {
+  //   console.error(error);
+  // });
+  // promise1.then((data) => {
+  //   console.log(data);
+  // });
+
+  const { products } = await getProducts();
+
   products.forEach((product) => {
     createCard(product);
   });
