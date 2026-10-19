@@ -1,17 +1,64 @@
 /** @format */
 
-const payBtn = document.querySelector("#pay-with-crypto");
-const modal = document.querySelector("#modal");
-const content = document.querySelector("#content");
-const modalContent = document.querySelector("#modalContent");
+// let name: string = "John Doe";
+// let age: number = 30;
+
+// function formatUSD<T>(cents: T): T {
+//   return cents;
+// }
+
+// function formatUSD<T>(cents: T): T {
+//   return cents
+// }
+
+// formatUSD(250); // 250 USD
+// formatUSD("250"); // 250 USD
+
+// interface IProduct {
+//   id: number;
+//   title: string;
+//   price: number;
+//   thumbnail?: string;
+//   description?: string;
+// }
+
+
+
+// const product: IProduct = {
+//   id: 1,
+//   title: "Sample Product",
+//   price: 200,
+// };
+
+// function getProduct(product: IProduct): IProduct {
+//   return product;
+// }
+
+// type StatusType = "success" | "error" | "loading" 
+
+// type State =
+//   | { status: "loading" }
+//   | { status: "error"; error: string }
+//   | { status: "success"; products: IProduct[] };
+
+// let status: StatusType = "success";
+// let state: State = { status: "loading" };
+
+/** @format */
+import type { IProduct, IProductWithQuantity } from "./types";
+
+const payBtn = document.querySelector("#pay-with-crypto") as HTMLButtonElement;
+const modal = document.querySelector("#modal") as HTMLDivElement;
+const modalContent = document.querySelector("#modalContent") as HTMLDivElement;
 
 // Stores cart state items as: { id, name, price, currency, image, quantity }
-let addToCarts = [];
 
-const createCard = (product) => {
+let addToCarts: IProductWithQuantity[] = [];
+
+const createCard = (product: IProduct) => {
   const cardContainer = document.createElement("div");
   cardContainer.classList.add("cardContainer");
-  cardContainer.dataset.productId = product.id;
+  cardContainer.dataset.productId = `${product.id}`;
 
   const productName = document.createElement("p");
   productName.classList.add("text-xs");
@@ -35,23 +82,27 @@ const createCard = (product) => {
   cardContainer.appendChild(productName);
   cardContainer.appendChild(productImageContainer);
   cardContainer.appendChild(cardFooter);
+
   content.appendChild(cardContainer);
 
   // Scoped Event Target Selection
-  const addBtn = cardFooter.querySelector(".btn-plus");
+  const addBtn = cardFooter.querySelector(".btn-plus") as HTMLButtonElement;
   const minusBtn = cardFooter.querySelector(".btn-minus");
 
   addBtn.addEventListener("click", () => {
     changeQuantity(product, 1);
   });
 
-  minusBtn.addEventListener("click", () => {
+  minusBtn?.addEventListener("click", () => {
     changeQuantity(product, -1);
   });
 };
 
+const content = document.querySelector("#content") as HTMLDivElement;
+
+
 // Unified state modifier function handles addition and reduction cleanly
-const changeQuantity = (product, change) => {
+const changeQuantity = (product: IProduct, change: number) => {
   const cartItem = addToCarts.find((item) => item.id === product.id);
 
   if (cartItem) {
@@ -68,7 +119,11 @@ const changeQuantity = (product, change) => {
   // Synchronize main page display counters
   const updatedItem = addToCarts.find((item) => item.id === product.id);
   const displayValue = updatedItem ? updatedItem.quantity : 0;
-  document.querySelector(`#price-${product.id}`).textContent = displayValue;
+
+  const displayElement = document.querySelector(
+    `#price-${product.id}`
+  ) as HTMLParagraphElement;
+  displayElement.textContent = `${displayValue}`;
 
   // Sync up the checkout overlay window layout
   renderModal();
@@ -94,9 +149,9 @@ const renderModal = () => {
       "border-b",
       "pb-2"
     );
-    card.innerHTML = ` 
+    card.innerHTML = `
       <div>
-        <p class="text-sm font-medium">${item.name}</p>
+        <p class="text-sm font-medium">${item.title}</p>
         <div class="flex items-center gap-2 mt-1">
           <img src="${item.thumbnail}" class="w-10" />
           <span class="text-xs text-gray-500">Qty: ${item.quantity}</span>
@@ -114,7 +169,7 @@ const renderModal = () => {
       </div>`;
 
     // Hook up minus controls internally inside checkout overview container layout targets
-    card.querySelector(".btn-modal-minus").addEventListener("click", () => {
+    card.querySelector(".btn-modal-minus")?.addEventListener("click", () => {
       changeQuantity(item, -1);
     });
 
@@ -137,7 +192,7 @@ const showLoading = () => {
 };
 
 const hideLoading = () => {
-  document.querySelector("#loading").remove();
+  document.querySelector("#loading")!.remove();
   content.classList.add("grid");
 };
 
@@ -152,7 +207,7 @@ const showEmpty = () => {
   content.classList.remove("grid");
 };
 
-const getProducts = async () => {
+async function getProducts<T>(): Promise<T[]> {
   showLoading();
   const response = await fetch("https://dummyjson.com/products");
   if (!response.ok) {
@@ -161,45 +216,18 @@ const getProducts = async () => {
 
   hideLoading();
 
-  const data = await response.json();
-  if (data.products.length === 0) {
+  const { products } = (await response.json()) as {
+    products: T[];
+  };
+
+  if (products.length === 0) {
     showEmpty();
   }
-  return data;
-};
-
-// const data = fetch(url);
-// data
-//   .then((response) => {
-//     if (!response.ok) {
-//       throw new Error("Network response was not ok");
-//     }
-//     return response.json();
-//   })
-//   .then((data) => {
-//     console.log(data);
-//   });
+  return products;
+}
 
 window.onload = async () => {
-  // Promise
-  // const promise1 = new Promise((resolve, reject) => {
-  //   let success = true; // Simulating an operation status
-  //   setTimeout(() => {
-  //     if (success) {
-  //       resolve("The operation was successful!"); // Transitions to fulfilled
-  //     } else {
-  //       reject("Something went wrong."); // Transitions to rejected
-  //     }
-  //   }, 4000);
-  // });
-  // promise1.catch((error) => {
-  //   console.error(error);
-  // });
-  // promise1.then((data) => {
-  //   console.log(data);
-  // });
-
-  const { products } = await getProducts();
+  const products = await getProducts<IProduct>();
 
   products.forEach((product) => {
     createCard(product);
